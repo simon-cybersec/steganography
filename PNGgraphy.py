@@ -3,8 +3,8 @@ from PIL import Image
 signature_string = "MadeBySimonCybersec"
 
 
-def encode(image, data_base64):
-    # type (Image, String) -> None
+def encode(image, data_base64, output_filename):
+    # type (Image, String, String) -> None
 
     # String to be encoded: Add signature before and after data
     data_string = signature_string + data_base64 + signature_string
@@ -64,7 +64,10 @@ def encode(image, data_base64):
     # Write all channels back to image
     image.putdata(pixels_rgb)
     # Save image
-    image.save("newCyberSec_e.png")
+    if output_filename is not None:
+        image.save(output_filename)
+    else:
+        image.save("NewImage.png")
 
 
 def decode(image):
@@ -121,11 +124,12 @@ def decode(image):
 
     if position_start >= 0:
         # Convert bytes to a string
-        decoded_message = ''
+        decoded_data = ""
         for k in range(len(data_bytes)):
             char = chr(data_bytes[k])
-            decoded_message += char
+            decoded_data += char
 
-        print(f'Decoded message: {decoded_message}')
+        return decoded_data
     else:
-        print("No Text found")
+        print("No data found!")
+        return None
