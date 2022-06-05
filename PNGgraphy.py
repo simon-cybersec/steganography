@@ -64,7 +64,7 @@ def encode(image, data_base64):
     # Write all channels back to image
     image.putdata(pixels_rgb)
     # Save image
-    image.save("newCyberSec_de.png")
+    image.save("newCyberSec_e.png")
 
 
 def decode(image):
@@ -73,26 +73,31 @@ def decode(image):
     # Signature String in bytes
     signature_bytes = bytearray(signature_string, 'utf-8')
 
-    # Get red channel data
+    # Get red channel of all pixels
     image_data_red = list(image.getdata(0))
 
-    # Generate raw bytes containing only last bit of red byte shifted to its correct position
+    # Generate the raw data bytes.
+    # Therefore take the last bit of each of the red bytes and shift them to their correct position
     raw_bytes = bytearray()
     pos = 0
-    for i in range(0, 24):  # range(len(image_data_red)):
-        print("i = {}".format(i))
-        # Get last bit of each red byte using AND-operator together with 0b1
+    for i in range(len(image_data_red)):  # range(0, 24):
+        # print("i = {}".format(i))
+
+        # Get the last bit of a byte by using AND-operator together with 0b1
         raw_bytes.append(image_data_red[i] & 0b1)
-        print("raw = " + bin(raw_bytes[i]))
+        # print("raw = " + bin(raw_bytes[i]))
+
         # Shift the bit to its correct position
         raw_bytes[i] = raw_bytes[i] << pos
-        print("shifted raw = " + bin(raw_bytes[i]))
+        # print("shifted raw = " + bin(raw_bytes[i]))
+
+        # After eight bits set position counter back to zero
         pos += 1
         if pos == 8:
             pos = 0
 
     # Combine 8 bytes to on byte using OR operator
-    message_bytes = bytearray()
+    data_bytes = bytearray()
     counter = 0
     temp_byte = raw_bytes[0]
     bytes_iterator = iter(raw_bytes)
@@ -101,30 +106,24 @@ def decode(image):
             temp_byte = temp_byte | next(bytes_iterator)
             counter += 1
             if counter == 8:
-                message_bytes.append(temp_byte)
+                data_bytes.append(temp_byte)
                 counter = 0
                 temp_byte = 0
         except StopIteration:
             break
 
-    # Find the two signature strings in the array and get the values in between them (which is the message)
-    position_start = message_bytes.find(signature_bytes)
-    position_end = message_bytes.find(signature_bytes, position_start + 1)
-    final_bytes = message_bytes[position_start + len(signature_bytes):position_end]
+    # Find the two signature strings in the array and get the values in between them (which is the data)
+    position_start = data_bytes.find(signature_bytes)
+    position_end = data_bytes.find(signature_bytes, position_start + 1)
+    data_bytes = data_bytes[position_start + len(signature_bytes):position_end]
 
     print(f'start: {position_start}, end: {position_end}')
-    decoded_message = ''
-    for k in range(len(final_bytes)):
-        char = chr(final_bytes[k])
-        decoded_message += char
-
-    print(f'Decoded message: {decoded_message}')
 
     if position_start >= 0:
         # Convert bytes to a string
         decoded_message = ''
-        for k in range(len(final_bytes)):
-            char = chr(final_bytes[k])
+        for k in range(len(data_bytes)):
+            char = chr(data_bytes[k])
             decoded_message += char
 
         print(f'Decoded message: {decoded_message}')
