@@ -65,8 +65,10 @@ def encode(image, data_string, output_filename):
     image.putdata(pixels_rgb)
     # Save image
     if output_filename is not None:
+        print("[+] Saving image " + output_filename + " ...")
         image.save(output_filename)
     else:
+        print("[+] Saving image NewImage.png ...")
         image.save("NewImage.png")
 
 
@@ -120,7 +122,8 @@ def decode(image):
     position_end = data_bytes.find(signature_bytes, position_start + 1)
     data_bytes = data_bytes[position_start + len(signature_bytes):position_end]
 
-    print(f'start: {position_start}, end: {position_end}')
+    # Print start and stop position for debugging
+    # print(f'start: {position_start}, end: {position_end}')
 
     if position_start >= 0:
         # Convert bytes to a string

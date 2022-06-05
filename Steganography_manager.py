@@ -24,12 +24,7 @@ def process(args, parser):
             print(f'width: {width}, height: {height}')
 
             image_byte_capacity = width * height
-            print(f'image byte capacity: {image_byte_capacity}')
-
-    # Data type is either 'm' for message or 'f' for file
-    # Default input type and data
-    input_type = 'm'
-    input_data = ''
+            print(f'image byte capacity: {image_byte_capacity} \n')
 
     # Check if encoding or decoding is specified
     if args.encode is True:
@@ -37,6 +32,7 @@ def process(args, parser):
         # ---------------------------------------------------
         # ENCODING START
         # ---------------------------------------------------
+        input_data = ''
 
         if args.message is not None:
             # Check if the message length is too big. 1 byte of data needs 8 bytes of the image
@@ -53,7 +49,7 @@ def process(args, parser):
 
             # Check if file exists
             if Path(args.file).is_file():
-                print("Input file exists")
+                print("[+] Input file exists")
 
                 # Check if the file size is too big. 1 byte of data needs 8 bytes of the image
                 if Path(args.file).stat().st_size * 8 > image_byte_capacity:
@@ -71,17 +67,18 @@ def process(args, parser):
                 print("ERROR: Input file does not exist")
                 exit(1)
         else:
-            print("ERROR: Specify the data to embed using -m or -f!")
+            print("NOTE: Specify the data to embed into the image using -m or -f flag")
             exit(1)
 
-        if len(input_data) > 3:
-            print("Input data: ")
-            print(input_data[0])
-            print(input_data[1])
-            print(input_data[2])
-            print(input_data[3])
-        else:
-            print("Input data bla blub")
+        # Debugging:
+        # if len(input_data) > 3:
+        #     print("Input data: ")
+        #     print(input_data[0])
+        #     print(input_data[1])
+        #     print(input_data[2])
+        #     print(input_data[3])
+        # else:
+        #     print("Input data bla blub")
 
         # ---------------------------------------------------
         # So now we got the input data and are able to encode
@@ -114,33 +111,40 @@ def process(args, parser):
 
             # We got a simple message
             if decoded_data[0] == "m":
-                print("We got a simple message")
+                print("[+] Extracted a simple message")
                 if args.output is not None:
+                    print("[+] Writing message into file " + args.output + " ...")
                     with open(args.output, 'a') as out:
                         out.write(decoded_data[1:] + '\n')
+                    print("[+] Done")
                 else:
-                    print(decoded_data[1:])
+                    print("[+] Message: " + decoded_data[1:])
 
             # We got a file
             elif decoded_data[0] == "f":
-                print("We got a file")
+                print("[+] Extracted a file")
                 # Convert base64 to binary
                 base64_encoded_bytes = decoded_data[1:].encode('utf-8')
                 decoded_bytes = base64.decodebytes(base64_encoded_bytes)
                 if args.output is not None:
+                    print("[+] Writing file " + args.output + " ...")
                     with open(args.output, 'wb') as file_to_save:
                         file_to_save.write(decoded_bytes)
                 else:
+                    print("[+] Writing file " + default_filename + ".txt" + " ...")
                     with open(default_filename+".txt", 'wb') as file_to_save:
                         file_to_save.write(decoded_bytes)
+                print("[+] Done")
+
             else:
                 print("ERROR: No file type specified!")
-                print("Data gets dumped into error_log.txt")
+                print("[+] Data gets dumped into error_log.txt ...")
                 with open("error_log.txt", 'a') as out:
                     out.write(decoded_data + '\n')
+                print("[+] Done")
 
         else:
-            print("No data found!")
+            print("[+] No data found!")
 
     else:
         parser.print_help()
