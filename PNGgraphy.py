@@ -1,13 +1,13 @@
 from PIL import Image
 
-signature_string = "MadeBySimonCybersec"
+signature_string = "M4d3by51m0nCyb3r53c"
 
 
-def encode(image, data_base64, output_filename):
+def encode(image, data_string, output_filename):
     # type (Image, String, String) -> None
 
     # String to be encoded: Add signature before and after data
-    data_string = signature_string + data_base64 + signature_string
+    data_string = signature_string + data_string + signature_string
     # Convert string into bytes
     data_bytes = bytearray(data_string, 'utf-8')
 

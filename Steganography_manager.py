@@ -45,9 +45,12 @@ def process(args, parser):
                 exit(1)
             else:
                 # input data is "m" + the message
+                input_type = 'm'
                 input_data = input_type + args.message
 
         elif args.file is not None:
+            input_type = 'f'
+
             # Check if file exists
             if Path(args.file).is_file():
                 print("Input file exists")
@@ -67,8 +70,11 @@ def process(args, parser):
             else:
                 print("ERROR: Input file does not exist")
                 exit(1)
+        else:
+            print("ERROR: Specify the data to embed using -m or -f!")
+            exit(1)
 
-        if len(input_data > 3):
+        if len(input_data) > 3:
             print("Input data: ")
             print(input_data[0])
             print(input_data[1])
@@ -80,12 +86,13 @@ def process(args, parser):
         # ---------------------------------------------------
         # So now we got the input data and are able to encode
         # ---------------------------------------------------
-        print("[+] Encoding ...")
-        if args.output is not None:
-            encode(args.image, input_data, args.output)
-        else:
-            encode(args.image, input_data, default_filename+".png")
-        print("[+] Done")
+        with Image.open(args.image) as image:
+            print("[+] Encoding ...")
+            if args.output is not None:
+                encode(image, input_data, args.output)
+            else:
+                encode(image, input_data, default_filename+".png")
+            print("[+] Done")
 
         # ---------------------------------------------------
         # ENCODING END
@@ -96,10 +103,12 @@ def process(args, parser):
         # ---------------------------------------------------
         # DECODING START
         # ---------------------------------------------------
-        print("[+] Decoding ...")
-        decoded_data = decode(args.image)
-        print("[+] Done")
-        print("[+] Analysing ...")
+        decoded_data = ""
+        with Image.open(args.image) as image:
+            print("[+] Decoding ...")
+            decoded_data = decode(image)
+            print("[+] Done")
+            print("[+] Analysing ...")
 
         if decoded_data is not None:
 
@@ -142,27 +151,31 @@ def process(args, parser):
 def steganography():
     # type () -> int
     parser = argparse.ArgumentParser()
+    group1 = parser.add_mutually_exclusive_group(required=True)
 
-    parser.add_argument("-i",
-                        "--image",
+    parser.add_argument("image",
                         type=str,
-                        required=True,
-                        help="input image name or filepath")
+                        help="image file")
+
+    group1.add_argument("-e",
+                        "--encode",
+                        action='store_true',
+                        help="encode")
+    group1.add_argument("-d",
+                        "--decode",
+                        action='store_true',
+                        help="decode")
+
+    # parser.add_argument("-i",
+    #                     "--image",
+    #                     type=str,
+    #                     required=True,
+    #                     help="input image name or filepath")
 
     parser.add_argument("-o",
                         "--output",
                         type=str,
                         help="output image name or filepath")
-
-    group1 = parser.add_mutually_exclusive_group()
-    group1.add_argument("-d",
-                        "--decode",
-                        action='store_true',
-                        help="decode")
-    group1.add_argument("-e",
-                        "--encode",
-                        action='store_true',
-                        help="encode")
 
     group2 = parser.add_mutually_exclusive_group()
     group2.add_argument("-m",
